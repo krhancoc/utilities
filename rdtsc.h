@@ -100,13 +100,6 @@ double rdtscp_average() {
   return cost / iterations;
 }
 
-void __rdtsc_cpuid(uint32_t function, uint32_t *eax, uint32_t *ebx,
-                   uint32_t *ecx, uint32_t *edx) {
-  asm __volatile__ ("cpuid"
-     : "=a" (*eax), "=b" (*ebx), "=c" (*ecx), "=d" (*edx)
-     : "a" (function));
-}
-
 /*
  * https://www.microbe.cz/docs/CPUID.pdf
  *
