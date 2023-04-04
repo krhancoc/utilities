@@ -1,10 +1,8 @@
 #ifndef __UTIL_TIME_H
 #define __UTIL_TIME_H
 
-#include <stdint.h>
-#include <stdbool.h>
 /*
- * Time.h
+ * rdtsc.h
  *
  * Various utilities for helping with the proper benchmarking
  *
@@ -13,17 +11,22 @@
  *
  */
 
-#define rdtsc_ns(clock_freq) \
-  ((double)(rdtsc_cycles()) / (clock_freq / 1e9))
+#include <stdio.h>
+#include <stdint.h>
+#include <stdbool.h>
+#include <unistd.h>
 
-#define rdtsc_us(clock_freq) \
-  ((double)(rdtsc_cycles()) / (clock_freq / 1e6))
+#define cycles_to_ns(cycles, clock_freq) \
+  ((double)((double)(cycles) / (clock_freq / 1e9)))
 
-#define rdtsc_ms(clock_freq) \
-  ((double)(rdtsc_cycles()) / (clock_freq / 1e3))
+#define cycles_to_us(cycles, clock_freq) \
+  ((double)((double)(cycles) / (clock_freq / 1e6)))
 
-#define rdtsc_s(clock_freq) \
-  ((double)(rdtsc_cycles()) / (clock_freq))
+#define cycles_to_ms(cycles, clock_freq) \
+  ((double)((double)(cycles) / (clock_freq / 1e3)))
+
+#define cycles_to_s(cycles, clock_freq) \
+  ((double)((double)(cycles) / (clock_freq)))
 
 
 #define rdtsc() (rdtsc_cycles())
@@ -95,6 +98,31 @@ double rdtscp_average() {
   }
 
   return cost / iterations;
+}
+
+void __rdtsc_cpuid(uint32_t function, uint32_t *eax, uint32_t *ebx,
+                   uint32_t *ecx, uint32_t *edx) {
+  asm __volatile__ ("cpuid"
+     : "=a" (*eax), "=b" (*ebx), "=c" (*ecx), "=d" (*edx)
+     : "a" (function));
+}
+
+/*
+ * https://www.microbe.cz/docs/CPUID.pdf
+ *
+ * I think there is a way to do this with CPUID, but Intel suggests
+ * this way.
+ *
+ * Because this requires a sleep for 1 second, obviously place this as a
+ * constant at the start of a program initialization phase and just reuse this
+ * constant throughout.
+ */
+uint64_t get_clock_speed_sleep() {
+  uint64_t start, end;
+  start = rdtscp();
+  sleep(1);
+  end = rdtscp();
+  return end - start;
 }
 
 #endif
