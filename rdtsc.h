@@ -7,38 +7,38 @@
  * Time.h
  *
  * Various utilities for helping with the proper benchmarking
+ *
  * References:
  * 1. https://www.intel.de/content/dam/www/public/us/en/documents/white-papers/ia-32-ia-64-benchmark-code-execution-paper.pdf
  *
  */
 
 #define rdtsc_ns(clock_freq) \
-  (double)(rdtsc_cycles()) / (clock_freq / 1e9)
+  ((double)(rdtsc_cycles()) / (clock_freq / 1e9))
 
 #define rdtsc_us(clock_freq) \
-  (double)(rdtsc_cycles()) / (clock_freq / 1e6)
+  ((double)(rdtsc_cycles()) / (clock_freq / 1e6))
 
 #define rdtsc_ms(clock_freq) \
-  (double)(rdtsc_cycles()) / (clock_freq / 1e3)
+  ((double)(rdtsc_cycles()) / (clock_freq / 1e3))
 
 #define rdtsc_s(clock_freq) \
-  (double)(rdtsc_cycles()) / (clock_freq)
+  ((double)(rdtsc_cycles()) / (clock_freq))
 
 
 #define rdtsc() (rdtsc_cycles())
 #define rdtscp() (rdtscp_cycles())
+
 /*
  * Read System Clock
  */
 static __attribute__((always_inline)) __inline__ uint64_t rdtsc_cycles(void) {
 #if defined(_i386_)
-  // #warning using rdtsc in get_server_clock
   uint64_t ret;
   asm __volatile__ (
       "rdtsc" : "=A" (ret)
   );
 #elif defined(__x86_64__) || defined(_M_X64)
-  // #warning using rdtsc in get_server_clock
   unsigned hi, lo;
   asm __volatile__ (
     "rdtsc" : "=a"(lo), "=d"(hi)
@@ -52,15 +52,13 @@ static __attribute__((always_inline)) __inline__ uint64_t rdtsc_cycles(void) {
 }
 
 /*
- * Prevents out-of-order execution, this can be done with CPUID instruction as well but at a much higher cost for
- * the instruction itself
+ * Prevents out-of-order execution, this can be done with CPUID instruction as
+ * well but at a much higher cost for the instruction itself
  */
 static __attribute__((always_inline)) __inline__ uint64_t rdtscp_cycles() {
 #if defined(_i386_)
-  // #warning using rdtsc in get_server_clock
   _Static_assert(false, "Unsupported architecture");
 #elif defined(__x86_64__) || defined(_M_X64)
-  // #warning using rdtsc in get_server_clock
   unsigned hi, lo;
   asm __volatile__ (
     "rdtscp" : "=a"(lo), "=d"(hi)
